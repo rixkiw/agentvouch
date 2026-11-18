@@ -26,8 +26,15 @@
   }
 
   let provider, contract;
+  // Log scanning needs a node that allows wide eth_getLogs ranges; several public
+  // BSC dataseeds refuse anything above a few dozen blocks. Keep it independent
+  // from the read RPC so a slow/limited node cannot blank the leaderboard.
+  const LOG_RPC = CFG.logRpc || "https://bsc.publicnode.com";
+  let logsContract;
   try {
     provider = new ethers.JsonRpcProvider(CFG.rpc, CFG.chainId, { staticNetwork: true });
+    const logProvider = new ethers.JsonRpcProvider(LOG_RPC, CFG.chainId, { staticNetwork: true });
+    logsContract = new ethers.Contract(CFG.contract || ethers.ZeroAddress, ABI, logProvider);
   } catch (e) {
     setStatus("rpc unavailable", false);
   }
@@ -64,8 +71,8 @@
       let vouched = [], revoked = [];
       try {
         [vouched, revoked] = await Promise.all([
-          contract.queryFilter(contract.filters.Vouched(), start, end),
-          contract.queryFilter(contract.filters.Revoked(), start, end)
+          logsContract.queryFilter(logsContract.filters.Vouched(), start, end),
+          logsContract.queryFilter(logsContract.filters.Revoked(), start, end)
         ]);
       } catch (e) {
         if (end - start <= 50) return;            // genuinely nothing we can do
