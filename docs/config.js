@@ -2,8 +2,8 @@
 window.AGENTVOUCH = {
   chainId: 56,
   chainName: "BNB Smart Chain",
-  contract: "",          // filled after deploy
-  deployBlock: 0,        // filled after deploy
+  contract: "0x9AAD39465d65E4291011680930c2536437f08B4b",          // filled after deploy
+  deployBlock: 134356861,        // filled after deploy
   rpc: "https://bsc-dataseed.binance.org",
   agentIdContract: "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
   explorer: "https://bscscan.com"
