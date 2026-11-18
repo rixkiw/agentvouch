@@ -2,6 +2,7 @@
    No wallet connection is required or requested; no QR pairing, ever. */
 (() => {
   const CFG = window.AGENTVOUCH || {};
+  CFG.rpc = CFG.rpc || "https://bsc.publicnode.com";
   const ABI = [
     "function vouch(address agent, string note)",
     "function revoke(address agent)",
@@ -50,15 +51,16 @@
     }
     contract = new ethers.Contract(CFG.contract, ABI, provider);
 
-    // 1. Replay events from the deployment block in 5k chunks.
+    // 1. Replay events from the deployment block in 20k chunks (publicnode caps
+    //    eth_getLogs at 50k blocks; failed ranges are bisected instead of skipped).
     const latest = await provider.getBlockNumber();
     const from = CFG.deployBlock || 0;
-    const CHUNK = 5000;
+    const CHUNK = 20000;
     const active = new Map();  // `${voucher}|${agent}` -> {voucher, agent, note, at}
     const touched = new Set();
 
-    for (let start = from; start <= latest; start += CHUNK) {
-      const end = Math.min(start + CHUNK - 1, latest);
+    async function collect(start, end) {
+      if (start > end) return;
       let vouched = [], revoked = [];
       try {
         [vouched, revoked] = await Promise.all([
@@ -66,7 +68,11 @@
           contract.queryFilter(contract.filters.Revoked(), start, end)
         ]);
       } catch (e) {
-        continue; // transient RPC hiccup on a chunk: skip, the next chunk still lands
+        if (end - start <= 50) return;            // genuinely nothing we can do
+        const mid = start + Math.floor((end - start) / 2);
+        await collect(mid + 1, end);
+        await collect(start, mid);
+        return;
       }
       for (const ev of vouched) {
         const { voucher, agent, note } = ev.args;
@@ -81,6 +87,10 @@
         active.delete(key);
         touched.add(ev.args[1].toLowerCase());
       }
+    }
+
+    for (let start = from; start <= latest; start += CHUNK) {
+      await collect(start, Math.min(start + CHUNK - 1, latest));
     }
 
     // 2. Aggregate per agent.
