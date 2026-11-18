@@ -5,8 +5,13 @@
 Built for the **Binance Wallet × BNB Chain Agent ID Hackathon** (submission period
 2026-11-18 08:00 UTC → 2026-12-09 08:00 UTC, 60,000 USDC prize pool).
 
-- Site: `docs/` (GitHub Pages)
+- Site: `docs/` (GitHub Pages) — **live at https://rixkiw.github.io/agentvouch/**
 - Contract: `src/AgentVouch.sol` — Solidity 0.8.20, MIT, no imports, no dependencies
+- Deployed: **`0x9AAD39465d65E4291011680930c2536437f08B4b`** (block `134356861`), deployed through the
+  deterministic CREATE2 proxy `0x4e59b44847b379588920cA78FbF26c0B4956C` with salt
+  `keccak256("agentvouch-v1")`
+- **Verified on BscScan** (exact match, solc 0.8.20, optimizer 200 runs):
+  https://bscscan.com/address/0x9AAD39465d65E4291011680930c2536437f08B4b#code
 - Chain: BNB Smart Chain mainnet (chain id 56)
 - Agent ID contract: `0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F` (SPACE ID Agent ID, ERC-721, non-transferable)
 
@@ -160,3 +165,11 @@ verify.sh               flatten + verify on BscScan
 ## License
 
 MIT — see `LICENSE`.
+
+## Live trace
+
+| step | evidence |
+|---|---|
+| deploy (via CREATE2 proxy) | tx `0x7687f0d270aeb18646bc1083084db9a5631f0637f9813cb489b570dd142d5c24` · 1,033,624 gas · 0.0000916 BNB |
+| first vouch (`rixkiw.ai` → `triusus.ai`) | tx `0x972aa6479a595bdab06a35516868efc850473f174dbc32c62c141d971ae1a913` · 281,422 gas |
+| on-chain state | `totalVouches()` = 1 · `handleOfSafe(triusus)` = "triusus" |
