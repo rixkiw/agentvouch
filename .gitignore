@@ -1,0 +1,5 @@
+lib/
+out/
+cache/
+AgentVouch.flat.sol
+.DS_Store
