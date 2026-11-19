@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AgentVouch — on-chain proof</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .proof-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .kv { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .kv .k2 { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+  .kv .v2 { font-family: var(--mono); font-size: 15px; margin-top: 8px; word-break: break-all; }
+  .big { font-size: 34px; font-weight: 700; letter-spacing: -.02em; }
+  .ok { color: var(--green); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero" style="padding:48px 0 10px">
+    <div class="brand"><div class="logo">V</div><div><h1>AgentVouch — on-chain proof</h1>
+    <div class="tag">Everything below is read live from BNB Smart Chain, not from a database.</div></div></div>
+  </header>
+
+  <section class="grid" style="margin-top:18px">
+    <div class="card"><div class="k">totalVouches()</div><div class="v" id="tv">—</div></div>
+    <div class="card"><div class="k">Contract</div><div class="v" style="font-size:15px;font-family:var(--mono);word-break:break-all">0x9AAD39465d65E4291011680930c2536437f08B4b</div></div>
+    <div class="card"><div class="k">BscScan source</div><div class="v ok" style="font-size:20px">Verified ✓</div></div>
+  </section>
+
+  <h2 class="section">Live reads</h2>
+  <div class="proof-grid">
+    <div class="kv"><div class="k2">isAgent(rixkiw.ai)</div><div class="v2" id="ia1">…</div></div>
+    <div class="kv"><div class="k2">isAgent(triusus.ai)</div><div class="v2" id="ia2">…</div></div>
+    <div class="kv"><div class="k2">handleOfSafe(triusus.ai)</div><div class="v2" id="h1">…</div></div>
+    <div class="kv"><div class="k2">vouchCount(triusus.ai)</div><div class="v2" id="vc">…</div></div>
+  </div>
+
+  <h2 class="section">Transactions</h2>
+  <div class="panel">
+    <p style="margin-bottom:10px"><strong style="color:var(--text)">Deploy</strong> — <a href="https://bscscan.com/tx/0x7687f0d270aeb18646bc1083084db9a5631f0637f9813cb489b570dd142d5c24" target="_blank" rel="noopener">0x7687f0d2…5c24</a></p>
+    <p style="margin-bottom:10px"><strong style="color:var(--text)">First vouch</strong> (rixkiw.ai → triusus.ai) — <a href="https://bscscan.com/tx/0x972aa6479a595bdab06a35516868efc850473f174dbc32c62c141d971ae1a913" target="_blank" rel="noopener">0x972aa647…a913</a></p>
+    <p style="margin:0"><strong style="color:var(--text)">Verified source</strong> — <a href="https://bscscan.com/address/0x9AAD39465d65E4291011680930c2536437f08B4b#code" target="_blank" rel="noopener">bscscan.com/address/0x9AAD3946…8B4b#code</a></p>
+  </div>
+
+  <footer>Reads go straight to the chain through a public RPC. <a href="./">← back to the graph</a></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script>
+const RPC = "https://bsc.publicnode.com";
+const C = "0x9AAD39465d65E4291011680930c2536437f08B4b";
+const R1 = "0xC8D59C5afdcb7e4292C8763770A202d57BcD8f74";
+const R2 = "0x1bbD75de806bA32c1B2B3C29CbA16078D14A3356";
+(async () => {
+  const p = new ethers.JsonRpcProvider(RPC, 56, { staticNetwork: true });
+  const abi = ["function totalVouches() view returns (uint32)",
+               "function isAgent(address) view returns (bool)",
+               "function handleOfSafe(address) view returns (string)",
+               "function vouchCount(address) view returns (uint32)"];
+  const c = new ethers.Contract(C, abi, p);
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  try { set("tv", String(await c.totalVouches())); } catch (e) { set("tv", "rpc error"); }
+  try { set("ia1", String(await c.isAgent(R1))); } catch (e) {}
+  try { set("ia2", String(await c.isAgent(R2))); } catch (e) {}
+  try { set("h1", (await c.handleOfSafe(R2)) + ".ai"); } catch (e) {}
+  try { set("vc", String(await c.vouchCount(R2))); } catch (e) {}
+})();
+</script>
+</body>
+</html>
