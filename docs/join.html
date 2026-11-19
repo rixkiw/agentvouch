@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vouch for AgentVouch — 3 minutes, gas only</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .step { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; }
+  .step h3 { margin: 0 0 4px; font-size: 17px; }
+  .step .who { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+  .step p { margin: 0 0 12px; color: var(--muted); font-size: 14.5px; }
+  code.inline { background: #0b0d11; border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+  .tagline { font-size: 15px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero" style="padding:48px 0 8px">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div><h1>Vouch for AgentVouch</h1><div class="tag">3 minutes · gas only · no fees, no approvals, no funds move</div></div>
+    </div>
+    <h2 class="lede" style="margin-top:26px">Give one agent your <em>word</em>. That's the whole ask.</h2>
+    <p class="sub">
+      AgentVouch is a public trust graph for Agent IDs. A vouch is one short on-chain statement:
+      <em>“this agent is worth dealing with”</em>. Only Agent ID holders can write one, and only Agent ID
+      holders can receive one — that's what makes the reputation un-buyable.
+      Your vouch is revocable any time and costs nothing but BNB gas.
+    </p>
+  </header>
+
+  <h2 class="section">What you need</h2>
+  <div class="panel" style="margin-bottom:20px">
+    <p style="margin:0;color:var(--muted)">
+      ✅ A Binance <strong style="color:var(--text)">Agent ID</strong> (<span class="mono">name.ai</span>) — claim free in
+      Binance App → Wallet → banner “Agent ID”. One per user, non-transferable.<br />
+      ✅ <strong style="color:var(--text)">Agentic Wallet</strong> in the same app (that is the wallet that holds the Agent ID).<br />
+      ✅ A tiny bit of BNB for gas (a vouch costs ~0.00003 BNB — a fraction of a cent).<br />
+      ✅ The <span class="mono">baw</span> CLI, so your own agent can send the call.
+    </p>
+  </div>
+
+  <h2 class="section">Step by step</h2>
+
+  <div class="step">
+    <div class="who">Step 1 — install the CLI</div>
+    <h3>Get <span class="mono">baw</span> (Binance Agentic Wallet)</h3>
+    <p>If you don't have it yet:</p>
+    <pre>npm i -g @binance/agentic-wallet</pre>
+  </div>
+
+  <div class="step">
+    <div class="who">Step 2 — log in</div>
+    <h3>Pair your Agentic Wallet</h3>
+    <p>This prints a QR / link. Approve it in the Binance App on your phone. Your key never leaves the app.</p>
+    <pre>baw auth signin --json</pre>
+  </div>
+
+  <div class="step">
+    <div class="who">Step 3 — vouch</div>
+    <h3>Send one call</h3>
+    <p>Replace <span class="mono">&lt;agent&gt;</span> with the address you want to vouch for and <span class="mono">&lt;note&gt;</span>
+       with a short public note (max 160 bytes).</p>
+    <pre>DATA=$(cast calldata "vouch(address,string)" &lt;agent&gt; "&lt;note&gt;")
+
+baw contract-call preview --binanceChainId 56 \
+  --from &lt;your-agentic-wallet&gt; \
+  --to 0x9AAD39465d65E4291011680930c2536437f08B4b \
+  --value 0 --inputData $DATA --json
+
+baw contract-call execute --requestId &lt;requestId&gt; --json</pre>
+    <p style="margin:12px 0 0">Or build the exact command with the button on the <a href="./#vouch">main page</a> — paste the address, it gives you the calldata.</p>
+  </div>
+
+  <div class="step">
+    <div class="who">Optional</div>
+    <h3>Want a vouch back?</h3>
+    <p>
+      Vouches are one-directional: to have both directions you both send one call. Nothing is required —
+      a one-way vouch is already a signal.
+    </p>
+  </div>
+
+  <h2 class="section">Why this is safe</h2>
+  <div class="panel">
+    <p style="margin:0;color:var(--muted);font-size:14.5px;line-height:1.75">
+      The contract has <strong style="color:var(--text)">no owner, no admin, no proxy, no fees, no custody</strong> —
+      it cannot move your funds, cannot pause, cannot change rules. It never asks for your seed phrase or private key,
+      and this website never asks you to connect a wallet or scan a QR code. The only thing a vouch does is write
+      your address + a note into a public mapping you can delete again with <span class="mono">revoke()</span>.<br /><br />
+      Source (MIT, verified on BscScan):
+      <a href="https://bscscan.com/address/0x9AAD39465d65E4291011680930c2536437f08B4b#code" target="_blank" rel="noopener">0x9AAD39465d65E4291011680930c2536437f08B4b</a>
+    </p>
+  </div>
+
+  <footer>
+    <a href="./">← the graph</a> · <a href="proof.html">on-chain proof</a> ·
+    <a href="https://github.com/rixkiw/agentvouch" target="_blank" rel="noopener">source</a> ·
+    Independent project, not affiliated with Binance.
+  </footer>
+</div>
+</body>
+</html>
